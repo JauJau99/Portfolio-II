@@ -17,10 +17,14 @@ let currentGameState = GAME_STATES.IDLE;
 
 //Score
 let score = 0;
-let higScore = 0
+let highScore = 0
 const INVADER_POINTS = 10;
 
+//Invader rows
+const INVADER_ROWS = 4;
+const INVADER_ROW_SPACING = 10;
 
+const INVADER_COLORS = ["Yellow", "Green", "ORANGE", "RED"];
 
 // ------
 
@@ -103,19 +107,28 @@ window.addEventListener("keyup", function (e) {
 
 function init() {
 
-  let x = INVADERS.startX;
-  let y = INVADERS.startY;
-  for (let i = 0; i < npcPerRow; i++) {
-    INVADERS.enteties.push({
+  INVADERS.enteties = [];
+
+  //let x = INVADERS.startX;
+  //let y = INVADERS.startY;
+  for (let row = 0; row < INVADER_ROWS; row++){
+    let y = INVADERS.startY + row * (INVADERS.height + INVADER_ROW_SPACING);
+    let x = INVADERS.startX;
+    let color = INVADER_COLORS[row % INVADER_COLORS.length];
+
+    for (let col = 0; col < npcPerRow; col++){
+      INVADERS.enteties.push({
       x,
       y,
-      color: "Yellow",
+      color,
       active: true,
       width: INVADERS.width,
       height: INVADERS.height,
       points: INVADER_POINTS
-    });
-    x += INVADERS.width + INVADERS.padding;
+      });
+
+      x += INVADERS.width + INVADERS.padding;
+    }
   }
 
   INVADERS.speed = 1;
@@ -226,9 +239,7 @@ function updateInvaders() {
 
   let tx = INVADERS.speed * INVADERS.direction;
 
-  for (let i = 0; i < npcPerRow; i++) {
-    let invader = INVADERS.enteties[i];
-
+  for (let invader of INVADERS.enteties) {
     if (invader.active) {
 
       invader.x += tx;
@@ -237,9 +248,7 @@ function updateInvaders() {
       if (isShot(invader)) {
         invader.active = false;
       }
-
     }
-
   }
 
   movementSteps++;
@@ -325,8 +334,7 @@ function drawGameState() {
     }
   }
 
-  for (let i = 0; i < npcPerRow; i++) {
-    let invader = INVADERS.enteties[i];
+  for (let invader of INVADERS.enteties) {
     if (invader.active) {
       brush.fillStyle = invader.color;
       brush.fillRect(invader.x, invader.y, INVADERS.width, INVADERS.height);
@@ -356,23 +364,29 @@ function resetGame() {
   INVADERS.speed = 1;
   INVADERS.direction = 1;
 
-  let x = INVADERS.startX;
-  let y = INVADERS.startY;
-  for (let i = 0; i < npcPerRow; i++) {
-    INVADERS.enteties.push({
-      x,
-      y,
-      color: "Yellow",
-      active: true,
-      width: INVADERS.width,
-      height: INVADERS.height,
-      points: INVADER_POINTS
-    });
-    x += INVADERS.width + INVADERS.padding;
+  for (let row = 0; row < INVADER_ROWS; row++) {
+    let y = INVADERS.startY + row * (INVADERS.height + INVADER_ROW_SPACING);
+    let x = INVADERS.startX;
+    let color = INVADER_COLORS[row % INVADER_COLORS.length];
+
+    for (let col = 0; col < npcPerRow; col++) {
+      INVADERS.enteties.push({
+        x,
+        y,
+        color,
+        active: true,
+        width: INVADERS.width,
+        height: INVADERS.height,
+        points: INVADER_POINTS
+      });
+      x += INVADERS.width + INVADERS.padding;
+    }
   }
 
   //Resett bevegelse til invaders
   movementSteps = maxMovementSteps;
+
+
 }
 
 
