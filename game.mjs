@@ -20,6 +20,8 @@ let score = 0;
 let highScore = 0;
 const INVADER_POINTS = 10;
 
+let showingHighScore = false;
+
 //Invader rows
 const INVADER_ROWS = 4;
 const INVADER_ROW_SPACING = 10;
@@ -173,9 +175,9 @@ function drawGameOver(){
   brush.fillText("High score: " + highScore, 100, 230);
 
   brush.font = "20px serif";
-  brush.fillText("Trykk SPACE for meny", 100, 270);
+  brush.fillText("Trykk m for å gå til meny", 100, 270);
 
-  if (controlKeys[" "]) {
+  if (controlKeys["m"] || controlKeys["M"]){
     currentGameState = GAME_STATES.MENU;
   }
 }
@@ -186,6 +188,12 @@ function drawGameOver(){
 //#region Game functions
 
 function updateMenu(dt) {
+  if (showingHighScore){
+    if (controlKeys["m"] || controlKeys["M"]){
+      showingHighScore = false;
+    }
+  return;
+  }
 
   if (controlKeys[" "]) {
     MENU.buttons[MENU.currentIndex].action();
@@ -204,9 +212,20 @@ function updateMenu(dt) {
 }
 
 function drawMenu() {
+  if (showingHighScore) {
+    brush.font = "40px serif";
+    brush.fillText("High Score", 100, 120);
+
+    brush.font = "30px serif";
+    brush.fillText(highScore.toString(), 100, 170);
+
+    brush.font = "20px serif";
+    brush.fillText("Trykk M for å gå tilbake", 100, 220);
+    return;
+  }
+
   let sy = 100;
   for (let i = 0; i < MENU.buttons.length; i++) {
-
 
     let text = MENU.buttons[i].text;
     if (i == MENU.currentIndex) {
@@ -455,7 +474,7 @@ function startPlay() {
 
 
 function showHigScores() {
-
+  showingHighScore = true;
 }
 
 //#endregion
