@@ -167,6 +167,11 @@ init(); // Starts the game
 function drawGameOver(){
   brush.font = "40px serif";
   brush.fillText("GAME OVER", 100, 150);
+
+  brush.font = "24px serif";
+  brush.fillText("Score : " + score, 100, 200);
+  brush.fillText("High score: " + highScore, 100, 230);
+
   brush.font = "20px serif";
   brush.fillText("Trykk SPACE for meny", 100, 200);
 
@@ -219,7 +224,11 @@ function updateGame(dt) {
   updateShip();
   updateProjectiles();
   updateInvaders();
+
   if (isGameOver()) {
+    if (score > highScore){
+      highScore = score;
+    }
     currentGameState = GAME_STATES.GAMEOVER;
   }
 }
@@ -255,14 +264,23 @@ function updateInvaders() {
 
 }
 
-function isGameOver() {
-  for (let invader of INVADERS.enteties) {
-    if (invader.active) {
+function areAllInvadersDestroyed(){
+  for (let invader of INVADERS.enteties){
+    if(INVADERS.active){
       return false;
     }
   }
-
   return true;
+}
+
+function isGameOver() {
+  for (let invader of INVADERS.enteties) {
+    if (invader.active && invader.y + invader.height >= ship.y){
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function isShot(target) {
@@ -349,6 +367,9 @@ function drawGameState() {
 
 
 function resetGame() {
+  //Resetter score
+  score = 0;
+
   //Resett skipet
   ship.x = (scene.width * 0.5) - ship.width;
   ship.y = scene.height - 30;
