@@ -17,14 +17,14 @@ let currentGameState = GAME_STATES.IDLE;
 
 //Score
 let score = 0;
-let highScore = 0
+let highScore = 0;
 const INVADER_POINTS = 10;
 
 //Invader rows
 const INVADER_ROWS = 4;
 const INVADER_ROW_SPACING = 10;
 
-const INVADER_COLORS = ["Yellow", "Green", "ORANGE", "RED"];
+const INVADER_COLORS = ["Yellow", "Green", "Orange", "Red"];
 
 // ------
 
@@ -173,7 +173,7 @@ function drawGameOver(){
   brush.fillText("High score: " + highScore, 100, 230);
 
   brush.font = "20px serif";
-  brush.fillText("Trykk SPACE for meny", 100, 200);
+  brush.fillText("Trykk SPACE for meny", 100, 270);
 
   if (controlKeys[" "]) {
     currentGameState = GAME_STATES.MENU;
@@ -230,6 +230,8 @@ function updateGame(dt) {
       highScore = score;
     }
     currentGameState = GAME_STATES.GAMEOVER;
+  } else if (areAllInvadersDestroyed()){
+    startNewWave();
   }
 }
 
@@ -266,7 +268,7 @@ function updateInvaders() {
 
 function areAllInvadersDestroyed(){
   for (let invader of INVADERS.enteties){
-    if(INVADERS.active){
+    if(invader.active){
       return false;
     }
   }
@@ -365,6 +367,41 @@ function drawGameState() {
   brush.fillText("Score: " + score, 10, 20);
 }
 
+
+function startNewWave(){
+  ship.x = (scene.width * 0.5) - ship.width;
+  ship.y = scene.height - 30;
+  ship.velocityX = 0;
+  ship.velocityY = 0;
+
+  projectiles = [];
+  projectileCooldown = 0;
+
+  INVADERS.enteties = [];
+  INVADERS.speed = 1;
+  INVADERS.direction = 1;
+  
+  for (let row = 0; row < INVADER_ROWS; row++) {
+    let y = INVADERS.startY + row * (INVADERS.height + INVADER_ROW_SPACING);
+    let x = INVADERS.startX;
+    let color = INVADER_COLORS[row % INVADER_COLORS.length];
+
+    for (let col = 0; col < npcPerRow; col++) {
+      INVADERS.enteties.push({
+        x,
+        y,
+        color,
+        active: true,
+        width: INVADERS.width,
+        height: INVADERS.height,
+        points: INVADER_POINTS
+      });
+      x += INVADERS.width + INVADERS.padding;
+    }
+  }
+
+  movementSteps = maxMovementSteps;
+}
 
 function resetGame() {
   //Resetter score
