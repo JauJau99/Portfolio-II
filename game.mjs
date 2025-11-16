@@ -22,6 +22,21 @@ const INVADER_POINTS = 10;
 
 let showingHighScore = false;
 
+
+//UFO-------------------------------------------------------
+const UFO = {
+  active: false,
+  x: 0,
+  y: 40,
+  width: 40,
+  height: 20,
+  speed: 2,
+  points: 100
+};
+
+let ufoSpawnTimer = 0;
+
+
 //Invader rows
 const INVADER_ROWS = 4;
 const INVADER_ROW_SPACING = 10;
