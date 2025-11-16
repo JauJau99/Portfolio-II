@@ -15,6 +15,13 @@ const brush = getBrush();
 
 let currentGameState = GAME_STATES.IDLE;
 
+//Score
+let score = 0;
+let higScore = 0
+const INVADER_POINTS = 10;
+
+
+
 // ------
 
 const MENU = {
@@ -55,8 +62,8 @@ const INVADERS = {
   width: 50,
   height: 20,
   padding: 20,
-  sx: 50,
-  sy: 20,
+  startX: 50,
+  startY: 20,
   speed: 1,
   direction: 1,
   enteties: []
@@ -96,10 +103,18 @@ window.addEventListener("keyup", function (e) {
 
 function init() {
 
-  let x = INVADERS.sx;
-  let y = INVADERS.sy;
+  let x = INVADERS.startX;
+  let y = INVADERS.startY;
   for (let i = 0; i < npcPerRow; i++) {
-    INVADERS.enteties.push({ x, y, color: "Yellow", active: true, width: INVADERS.width, height: INVADERS.height });
+    INVADERS.enteties.push({
+      x,
+      y,
+      color: "Yellow",
+      active: true,
+      width: INVADERS.width,
+      height: INVADERS.height,
+      points: INVADER_POINTS
+    });
     x += INVADERS.width + INVADERS.padding;
   }
 
@@ -247,6 +262,10 @@ function isShot(target) {
     let projectile = projectiles[i];
     if (overlaps(target.x, target.y, target.width, target.height, projectile.x, projectile.y, projectile.width, projectile.height)) {
       projectile.active = false;
+
+      if (target.points){
+        score += target.points;
+      }
       return true;
     }
   }
@@ -313,11 +332,55 @@ function drawGameState() {
       brush.fillRect(invader.x, invader.y, INVADERS.width, INVADERS.height);
     }
   }
+
+  //Score board
+  brush.font = "20px serif";
+  brush.fillStyle = "black";
+  brush.fillText("Score: " + score, 10, 20);
 }
 
+
+function resetGame() {
+  //Resett skipet
+  ship.x = (scene.width * 0.5) - ship.width;
+  ship.y = scene.height - 30;
+  ship.velocityX = 0;
+  ship.velocityY = 0;
+
+  //Resett prosjektiler
+  projectiles = [];
+  projectileCooldown = 0;
+
+  //Resett invaders
+  INVADERS.enteties = [];
+  INVADERS.speed = 1;
+  INVADERS.direction = 1;
+
+  let x = INVADERS.startX;
+  let y = INVADERS.startY;
+  for (let i = 0; i < npcPerRow; i++) {
+    INVADERS.enteties.push({
+      x,
+      y,
+      color: "Yellow",
+      active: true,
+      width: INVADERS.width,
+      height: INVADERS.height,
+      points: INVADER_POINTS
+    });
+    x += INVADERS.width + INVADERS.padding;
+  }
+
+  //Resett bevegelse til invaders
+  movementSteps = maxMovementSteps;
+}
+
+
 function startPlay() {
+  resetGame();
   currentGameState = GAME_STATES.PLAY;
 }
+
 
 function showHigScores() {
 
