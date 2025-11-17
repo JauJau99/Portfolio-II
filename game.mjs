@@ -35,7 +35,7 @@ const INVADERS = {
   startY: 20,
   speed: 1,
   direction: 1,
-  enteties: []
+  entities: []
 };
 
 const npcPerRow = Math.floor((scene.width - INVADERS.height) / (INVADERS.width + INVADERS.height));
@@ -122,7 +122,7 @@ window.addEventListener("keyup", function (e) {
 
 
 function init() {
-  INVADERS.enteties = [];
+  INVADERS.entities = [];
 
   for (let row = 0; row < INVADER_ROWS; row++){
     let y = INVADERS.startY + row * (INVADERS.height + INVADER_ROW_SPACING);
@@ -130,7 +130,7 @@ function init() {
     let color = INVADER_COLORS[row % INVADER_COLORS.length];
 
     for (let col = 0; col < npcPerRow; col++){
-      INVADERS.enteties.push({
+      INVADERS.entities.push({
       x,
       y,
       color,
@@ -215,7 +215,7 @@ function updateMenu(dt) {
   }
 
   MENU.currentIndex = clamp(MENU.currentIndex, 0, MENU.buttons.length - 1);
-};
+}
 
 function drawMenu() {
   if (showingHighScore) {
@@ -243,7 +243,7 @@ function drawMenu() {
     sy += 50;
 
   }
-};
+}
 
 function startPlay() {
   resetGame();
@@ -270,10 +270,10 @@ function updateGame(dt) {
   } else if (areAllInvadersDestroyed()){
     startNewWave();
   }
-};
+}
 
 function isGameOver() {
-  for (let invader of INVADERS.enteties) {
+  for (let invader of INVADERS.entities) {
     if (invader.active && invader.y + invader.height >= ship.y){
       return true;
     }
@@ -283,13 +283,13 @@ function isGameOver() {
 }
 
 function areAllInvadersDestroyed(){
-  for (let invader of INVADERS.enteties){
+  for (let invader of INVADERS.entities){
     if(invader.active){
       return false;
     }
   }
   return true;
-};
+}
 
 // ---- Invaders movement ----
 function updateInvaders() {
@@ -306,7 +306,7 @@ function updateInvaders() {
 
   let tx = INVADERS.speed * INVADERS.direction;
 
-  for (let invader of INVADERS.enteties) {
+  for (let invader of INVADERS.entities) {
     if (invader.active) {
 
       invader.x += tx;
@@ -320,7 +320,7 @@ function updateInvaders() {
 
   movementSteps++;
 
-};
+}
 
 // ---- UFO ----
 function updateUfo() {
@@ -356,23 +356,7 @@ function getRandomUfoSpawnTime() {
   return 600 + Math.floor(Math.random() * 600);
 }
 
-function isShot(target) {
-
-  for (let i = 0; i < projectiles.length; i++) {
-    let projectile = projectiles[i];
-    if (overlaps(target.x, target.y, target.width, target.height, projectile.x, projectile.y, projectile.width, projectile.height)) {
-      projectile.active = false;
-
-      if (target.points){
-        score += target.points;
-      }
-      return true;
-    }
-  }
-
-  return false;
-}
-
+// ---- Ship and projectiles ----
 function updateShip() {
   if (controlKeys.ArrowLeft) {
     ship.velocityX--;
@@ -414,24 +398,45 @@ function updateProjectiles() {
   projectiles = activeProjectiles;
 }
 
-function drawGameState() {
+function isShot(target) {
+  for (let i = 0; i < projectiles.length; i++) {
+    let projectile = projectiles[i];
+    if (overlaps(target.x, target.y, target.width, target.height, projectile.x, projectile.y, projectile.width, projectile.height)) {
+      projectile.active = false;
 
+      if (target.points){
+        score += target.points;
+      }
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+// ---- Draw Game State ----
+function drawGameState() {
+  //Ship (Player)
   brush.fillStyle = "Black";
   brush.fillRect(ship.x, ship.y, ship.width, ship.height);
 
+  //Projectiles 
   for (let projectile of projectiles) {
     if (projectile.active) {
       brush.fillRect(projectile.x, projectile.y, projectile.width, projectile.height);
     }
   }
 
-  for (let invader of INVADERS.enteties) {
+  //Invaders (NPCs)
+  for (let invader of INVADERS.entities) {
     if (invader.active) {
       brush.fillStyle = invader.color;
       brush.fillRect(invader.x, invader.y, INVADERS.width, INVADERS.height);
     }
   }
 
+  //UFO
   if(UFO.active){
     brush.fillStyle = "Magenta";
     brush.fillRect(UFO.x, UFO.y, UFO.width, UFO.height);
@@ -444,6 +449,7 @@ function drawGameState() {
 }
 
 
+//---- Waves and reset ----
 function startNewWave(){
   ship.x = (scene.width * 0.5) - ship.width;
   ship.y = scene.height - 30;
@@ -453,7 +459,7 @@ function startNewWave(){
   projectiles = [];
   projectileCooldown = 0;
 
-  INVADERS.enteties = [];
+  INVADERS.entities = [];
   INVADERS.speed = 1;
   INVADERS.direction = 1;
   
@@ -463,7 +469,7 @@ function startNewWave(){
     let color = INVADER_COLORS[row % INVADER_COLORS.length];
 
     for (let col = 0; col < npcPerRow; col++) {
-      INVADERS.enteties.push({
+      INVADERS.entities.push({
         x,
         y,
         color,
@@ -493,7 +499,7 @@ function resetGame() {
   projectileCooldown = 0;
 
   //Invaders
-  INVADERS.enteties = [];
+  INVADERS.entities = [];
   INVADERS.speed = 1;
   INVADERS.direction = 1;
 
@@ -503,7 +509,7 @@ function resetGame() {
     let color = INVADER_COLORS[row % INVADER_COLORS.length];
 
     for (let col = 0; col < npcPerRow; col++) {
-      INVADERS.enteties.push({
+      INVADERS.entities.push({
         x,
         y,
         color,
@@ -523,9 +529,9 @@ function resetGame() {
 }
 
 
-
-
 //============= UTILITY FUNCTIONS =====================
+
+
 function getBrush() {
   return scene.getContext("2d");
 }
