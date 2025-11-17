@@ -94,12 +94,12 @@ const npcPerRow = Math.floor((scene.width - INVADERS.height) / (INVADERS.width +
 
 // ------
 
-// Movement back and forth of NPC´s are govered by counting up to a level
+//Hvor mange steg invaders går før de snur rettning
 const maxMovementSteps = 50;
 let movementSteps = maxMovementSteps;
 
 // ------
-// The following is a simple way of 
+//Holder styr på hvilke taster som er aktiv
 let controlKeys = {
   ArrowDown: false,
   ArrowUp: false,
@@ -478,20 +478,20 @@ function startNewWave(){
 }
 
 function resetGame() {
-  //Resetter score
+  //score
   score = 0;
 
-  //Resett skipet
+  //skipet
   ship.x = (scene.width * 0.5) - ship.width;
   ship.y = scene.height - 30;
   ship.velocityX = 0;
   ship.velocityY = 0;
 
-  //Resett prosjektiler
+  //prosjektiler
   projectiles = [];
   projectileCooldown = 0;
 
-  //Resett invaders
+  //invaders
   INVADERS.enteties = [];
   INVADERS.speed = 1;
   INVADERS.direction = 1;
@@ -563,3 +563,15 @@ function overlaps(x1, y1, w1, h1, x2, y2, w2, h2) {
   return true;
 }
 //#endregion
+
+
+//============= KONSTANTER og GLOBALE VARIABLER========
+
+//============= INPUT =================================
+
+//============= GAME ENGINE ===========================
+
+//============= GAME LOGIC ============================
+
+//============= UTILITY FUNCTIONS =====================
+
