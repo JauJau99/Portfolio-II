@@ -1,29 +1,52 @@
-//#region CONSTANTS ------------------------------------------------------------------
-const FPS = 1000 / 60;
+//============= KONSTANTER og GLOBALE VARIABLER========
+
+
+// ---- Game state ----
 const GAME_STATES = {
   IDLE: 0, 
   MENU: 1, 
   PLAY: 2, 
   GAMEOVER: 3
-}
+};
 
-//#endregion
 
-//#region Game variables -------------------------------------------------------------
+// ---- Canvas / Drawing ----
 const scene = document.getElementById("scene");
 const brush = getBrush();
 
-let currentGameState = GAME_STATES.IDLE;
 
-//Scoring
+//---- Scoring ----
 let score = 0;
 let highScore = 0;
 const INVADER_POINTS = 10;
-
 let showingHighScore = false;
 
 
-//UFO-------------------------------------------------------
+//---- Invader setup ----
+const INVADER_ROWS = 4;
+const INVADER_ROW_SPACING = 10;
+const INVADER_COLORS = ["Yellow", "Green", "Orange", "Red"];
+
+const INVADERS = {
+  width: 50,
+  height: 20,
+  padding: 20,
+  startX: 50,
+  startY: 20,
+  speed: 1,
+  direction: 1,
+  enteties: []
+};
+
+const npcPerRow = Math.floor((scene.width - INVADERS.height) / (INVADERS.width + INVADERS.height));
+
+
+// Invader movement (Hvor mange steg invaders går før de snur)
+const maxMovementSteps = 50;
+let movementSteps = maxMovementSteps;
+
+
+//---- UFO ----
 const UFO = {
   active: false,
   x: 0,
@@ -37,24 +60,7 @@ const UFO = {
 let ufoSpawnTimer = 0;
 
 
-//Invader rows
-const INVADER_ROWS = 4;
-const INVADER_ROW_SPACING = 10;
-
-const INVADER_COLORS = ["Yellow", "Green", "Orange", "Red"];
-
-// ------
-
-const MENU = {
-  currentIndex: 0,
-  buttons: [
-    { text: "Play", action: startPlay },
-    { text: "High Scores", action: showHigScores }
-  ]
-}
-
-// ------
-
+// ---- player ship ----
 const ship = {
   x: (scene.width * 0.5) - 50,
   y: scene.height - 30,
@@ -63,67 +69,59 @@ const ship = {
   velocityX: 0,
   velocityY: 0,
   maxVelocity: 3
-}
+};
 
-// ------
 
+// ---- Projectiles ----
 const PROJECTILE = {
   width: 3,
   height: 5,
   speed: 2,
   cooldownTime: 40
-}
+};
 
 let projectileCooldown = 0;
 let projectiles = [];
 
-// ------
 
-const INVADERS = {
-  width: 50,
-  height: 20,
-  padding: 20,
-  startX: 50,
-  startY: 20,
-  speed: 1,
-  direction: 1,
-  enteties: []
-}
+// ---- Menu ----
+const MENU = {
+  currentIndex: 0,
+  buttons: [
+    { text: "Play", action: startPlay },
+    { text: "High Scores", action: showHigScores }
+  ]
+};
 
-const npcPerRow = Math.floor((scene.width - INVADERS.height) / (INVADERS.width + INVADERS.height));
 
-// ------
-
-//Hvor mange steg invaders går før de snur rettning
-const maxMovementSteps = 50;
-let movementSteps = maxMovementSteps;
-
-// ------
-//Holder styr på hvilke taster som er aktiv
+// ---- Input state ----
 let controlKeys = {
   ArrowDown: false,
   ArrowUp: false,
   ArrowLeft: false,
   ArrowRight: false,
   " ": false, // space
-}
+};
 
+
+// ---- Current game state ----
+let currentGameState = GAME_STATES.IDLE;
+
+
+// ---- Keyboard listeners ----
 window.addEventListener("keydown", function (e) {
   controlKeys[e.key] = true;
 });
 
 window.addEventListener("keyup", function (e) {
   controlKeys[e.key] = false;
-})
+});
 
 
-//#endregion
+//============= GAME ENGINE ===========================
 
-
-//#region Game engine ----------------------------------------------------------------
 
 function init() {
-
   INVADERS.enteties = [];
 
   for (let row = 0; row < INVADER_ROWS; row++){
@@ -153,7 +151,6 @@ function init() {
 }
 
 function update(time) {
-
   if (currentGameState === GAME_STATES.MENU) {
     updateMenu(time);
   } else if (currentGameState === GAME_STATES.PLAY) {
@@ -174,10 +171,7 @@ function draw() {
   } else if (currentGameState=== GAME_STATES.GAMEOVER){
     drawGameOver();
   }
-
 }
-
-init(); // Starts the game
 
 function drawGameOver(){
   brush.font = "40px serif";
@@ -195,11 +189,13 @@ function drawGameOver(){
   }
 }
 
-//#endregion
+init(); // Starts the game
 
 
-//#region Game functions
+//============= GAME LOGIC ============================
 
+
+// ---- Meny ----
 function updateMenu(dt) {
   if (showingHighScore){
     if (controlKeys["m"] || controlKeys["M"]){
@@ -212,7 +208,6 @@ function updateMenu(dt) {
     MENU.buttons[MENU.currentIndex].action();
   }
 
-
   if (controlKeys.ArrowUp) {
     MENU.currentIndex--;
   } else if (controlKeys.ArrowDown) {
@@ -220,9 +215,7 @@ function updateMenu(dt) {
   }
 
   MENU.currentIndex = clamp(MENU.currentIndex, 0, MENU.buttons.length - 1);
-
-
-}
+};
 
 function drawMenu() {
   if (showingHighScore) {
@@ -250,8 +243,19 @@ function drawMenu() {
     sy += 50;
 
   }
+};
+
+function startPlay() {
+  resetGame();
+  currentGameState = GAME_STATES.PLAY;
 }
 
+function showHigScores() {
+  showingHighScore = true;
+}
+
+
+// ---- Gameplay ----
 function updateGame(dt) {
   updateShip();
   updateProjectiles();
@@ -266,10 +270,29 @@ function updateGame(dt) {
   } else if (areAllInvadersDestroyed()){
     startNewWave();
   }
+};
+
+function isGameOver() {
+  for (let invader of INVADERS.enteties) {
+    if (invader.active && invader.y + invader.height >= ship.y){
+      return true;
+    }
+  }
+
+  return false;
 }
 
-function updateInvaders() {
+function areAllInvadersDestroyed(){
+  for (let invader of INVADERS.enteties){
+    if(invader.active){
+      return false;
+    }
+  }
+  return true;
+};
 
+// ---- Invaders movement ----
+function updateInvaders() {
   let ty = 0;
 
   if (INVADERS.direction == 1 && movementSteps >= maxMovementSteps * 2) {
@@ -297,8 +320,9 @@ function updateInvaders() {
 
   movementSteps++;
 
-}
+};
 
+// ---- UFO ----
 function updateUfo() {
   if (!UFO.active) {
     ufoSpawnTimer--;
@@ -330,26 +354,6 @@ function resetUfo() {
 function getRandomUfoSpawnTime() {
   // mellom ca 10 og 20 sekunder ved ~60 fps
   return 600 + Math.floor(Math.random() * 600);
-}
-
-
-function areAllInvadersDestroyed(){
-  for (let invader of INVADERS.enteties){
-    if(invader.active){
-      return false;
-    }
-  }
-  return true;
-}
-
-function isGameOver() {
-  for (let invader of INVADERS.enteties) {
-    if (invader.active && invader.y + invader.height >= ship.y){
-      return true;
-    }
-  }
-
-  return false;
 }
 
 function isShot(target) {
@@ -478,20 +482,17 @@ function startNewWave(){
 }
 
 function resetGame() {
-  //score
   score = 0;
 
-  //skipet
   ship.x = (scene.width * 0.5) - ship.width;
   ship.y = scene.height - 30;
   ship.velocityX = 0;
   ship.velocityY = 0;
 
-  //prosjektiler
   projectiles = [];
   projectileCooldown = 0;
 
-  //invaders
+  //Invaders
   INVADERS.enteties = [];
   INVADERS.speed = 1;
   INVADERS.direction = 1;
@@ -522,20 +523,9 @@ function resetGame() {
 }
 
 
-function startPlay() {
-  resetGame();
-  currentGameState = GAME_STATES.PLAY;
-}
 
 
-function showHigScores() {
-  showingHighScore = true;
-}
-
-//#endregion
-
-//#region Utility functions ----------------------------------------------------------
-
+//============= UTILITY FUNCTIONS =====================
 function getBrush() {
   return scene.getContext("2d");
 }
@@ -562,16 +552,3 @@ function overlaps(x1, y1, w1, h1, x2, y2, w2, h2) {
 
   return true;
 }
-//#endregion
-
-
-//============= KONSTANTER og GLOBALE VARIABLER========
-
-//============= INPUT =================================
-
-//============= GAME ENGINE ===========================
-
-//============= GAME LOGIC ============================
-
-//============= UTILITY FUNCTIONS =====================
-
