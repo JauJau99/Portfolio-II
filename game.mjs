@@ -15,7 +15,7 @@ const brush = getBrush();
 
 let currentGameState = GAME_STATES.IDLE;
 
-//Score
+//Scoring
 let score = 0;
 let highScore = 0;
 const INVADER_POINTS = 10;
@@ -126,8 +126,6 @@ function init() {
 
   INVADERS.enteties = [];
 
-  //let x = INVADERS.startX;
-  //let y = INVADERS.startY;
   for (let row = 0; row < INVADER_ROWS; row++){
     let y = INVADERS.startY + row * (INVADERS.height + INVADER_ROW_SPACING);
     let x = INVADERS.startX;
@@ -258,6 +256,7 @@ function updateGame(dt) {
   updateShip();
   updateProjectiles();
   updateInvaders();
+  updateUfo();
 
   if (isGameOver()) {
     if (score > highScore){
@@ -299,6 +298,40 @@ function updateInvaders() {
   movementSteps++;
 
 }
+
+function updateUfo() {
+  if (!UFO.active) {
+    ufoSpawnTimer--;
+    if (ufoSpawnTimer <= 0) {
+      UFO.active = true;
+      UFO.x = -UFO.width; // start utenfor venstre kant
+    }
+  } else {
+    // Beveg UFOen
+    UFO.x += UFO.speed;
+
+    // Sjekk om UFO blir truffet
+    if (isShot(UFO)) {
+      UFO.active = false;
+      ufoSpawnTimer = getRandomUfoSpawnTime();
+    } else if (UFO.x > scene.width) {
+      // Fløy ut av skjermen
+      UFO.active = false;
+      ufoSpawnTimer = getRandomUfoSpawnTime();
+    }
+  }
+}
+
+function resetUfo() {
+  UFO.active = false;
+  ufoSpawnTimer = getRandomUfoSpawnTime();
+}
+
+function getRandomUfoSpawnTime() {
+  // mellom ca 10 og 20 sekunder ved ~60 fps
+  return 600 + Math.floor(Math.random() * 600);
+}
+
 
 function areAllInvadersDestroyed(){
   for (let invader of INVADERS.enteties){
@@ -395,6 +428,11 @@ function drawGameState() {
     }
   }
 
+  if(UFO.active){
+    brush.fillStyle = "Magenta";
+    brush.fillRect(UFO.x, UFO.y, UFO.width, UFO.height);
+  }
+
   //Score board
   brush.font = "20px serif";
   brush.fillStyle = "black";
@@ -435,6 +473,8 @@ function startNewWave(){
   }
 
   movementSteps = maxMovementSteps;
+
+  resetUfo();
 }
 
 function resetGame() {
@@ -478,7 +518,7 @@ function resetGame() {
   //Resett bevegelse til invaders
   movementSteps = maxMovementSteps;
 
-
+  resetUfo();
 }
 
 
